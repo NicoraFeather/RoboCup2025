@@ -81,10 +81,13 @@ void Task_Parse(uint32_t data)
         else if (data_array[1] == 0 && data_array[2] == 1)
         {
             region = 'B';
-            //HAL_UART_Transmit(&huart2, "regionB", 9, HAL_MAX_DELAY);
+            HAL_UART_Transmit(&huart2, "regionB", 9, HAL_MAX_DELAY);
         }
         else if (data_array[1] == 1 && data_array[2] == 1)
+        {
             region = 'C';
+            HAL_UART_Transmit(&huart2, "regionC", 9, HAL_MAX_DELAY);
+        }
         //遍历之后的12位，判断各个点位的干旱情况并且发送消息
         for (int i = 3; i < 15; i += 2)
         {
@@ -95,15 +98,23 @@ void Task_Parse(uint32_t data)
             {
                 state = 1; // 轻微干旱
                 Src_Change_Num(region, num, state);
+                Src_Change_Color(region, num, state);
             }
             else if (data_array[i] == 0 && data_array[i + 1] == 1)
             {
                 state = 2; // 一般干旱
                 Src_Change_Num(region, num, state);
+                Src_Change_Color(region, num, state);
             }
             else if (data_array[i] == 1 && data_array[i + 1] == 1)
             {
                 state = 3; // 严重干旱
+                Src_Change_Num(region, num, state);
+                Src_Change_Color(region, num, state);
+            }
+            else if (data_array[i] == 1 && data_array[i + 1] == 0)
+            {
+                state = 0; // 无干旱
                 Src_Change_Num(region, num, state);
             }
         }
@@ -115,33 +126,51 @@ void Task_Parse(uint32_t data)
     }
 }
 
-//data 00001010 10101010 00000000 00000000
-//data 00000000 00000000 01010101 01010000
-// 0x00005550
-//message 2B 00 00 55 50 8D E3 27 F9 2A
+/*
 
-//data 00101010 10101010 00000000 00000000
-//data 00000000 00000000 01010101 01010100
-// 00005554
-//  2B 00 00 55 54 8A 8E E3 E0 2A
+B区data
+230120
+从低到高
+00101111 00001100 00000000 00000000
+真正的uint32_t数据
+00000000 00000000 00110000 11110100
+即0x000030F4
+2B 00 00 30 F4 15 A5 E9 FE
 
-//设计B为1100
-//DATA 00101010 00000000 00000000 00000000
-//data 00000000 00000000 00000000 01010100
-//0x 00 00 00 54
-//发送B的测试指令 2B 00 00 00 54 4D 42 4A F1 2A
-//发送A的测试指令 2B 00 00 55 50 8D E3 27 F9 2A
-
-/***********首先测试区域性质***********/
-//我们规定00是A，01是B，11是C
-//初始化的时候是00，说明默认为A
+小端重排
+2B F4 30 00 00
+CRC 5D5C8D68
+再次小端重排
+2B F4 30 00 00 68 8D 5C 5D 2A
 
 
-//0x2B, 0x00, 0x00, 0x55, 0x50, 0x8D, 0xE3, 0x27, 0xF9, 0x2A,// 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00
-// A 区 123123
-//data 00000011 10001110 00000000 00000000
-//00000000 00000000 01110001 11000000
-//2B 00 00 71 C0
-//2B C0 71 00 00 53 4D 05 69 2A
+A区data
+00000011 10001110 00000000 00000000
+真正的uint32_t数据
+00000000 00000000 01110001 11000000
+即0x000071C0
+小端重排
+2B C0 71 00 00
+CRC 534D0569
 
-//实际发送的应当是 2B C0 71 00 00 69 05 4D 53 2A
+再次小端重排
+2B C0 71 00 00 69 05 4D 53 2A
+
+C区data
+333111
+01111111 10000000 00000000 00000000
+真正的uint32_t数据
+00000000 00000000 00000001 11111110
+即0x000001FE
+小端重排
+2B FE 01 00 00
+CRC 1748E2AB
+再次小端重排
+2B FE 01 00 00 AB E2 48 17 2A
+*/
+
+
+//最终测试数据
+//2B C0 71 00 00 69 05 4D 53 2A
+//2B F4 30 00 00 68 8D 5C 5D 2A
+//2B FE 01 00 00 AB E2 48 17 2A

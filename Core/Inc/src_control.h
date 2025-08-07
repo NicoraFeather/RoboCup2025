@@ -8,5 +8,5 @@
 #include "main.h"
 void Src_Send_End();
 void Src_Change_Num(uint8_t region, uint8_t num, uint8_t state);
-
+void Src_Change_Color(uint8_t region, uint8_t num, uint8_t state);
 #endif //SRC_CONTROL_H

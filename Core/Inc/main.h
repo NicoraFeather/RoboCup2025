@@ -38,6 +38,7 @@ extern "C" {
 #include "uart_command.h"
 #include "src_control.h"
 #include "crcLib.h"
+#include "ASRPRO.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

@@ -46,7 +46,9 @@ add_executable(${CMAKE_PROJECT_NAME}
         Core/Src/callback.c
         Core/Inc/callback.h
         Core/Src/C610.c
-        Core/Inc/C610.h)
+        Core/Inc/C610.h
+        Core/Src/ASRPRO.c
+        Core/Inc/ASRPRO.h)
 
 add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_OBJCOPY} -O ihex ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}.elf ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}.hex

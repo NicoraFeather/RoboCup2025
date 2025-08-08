@@ -79,10 +79,10 @@ void MX_CAN1_Init(void)
   {
     Error_Handler();
   }
-}
+
   /* USER CODE END CAN1_Init 2 */
 
-
+}
 
 void HAL_CAN_MspInit(CAN_HandleTypeDef* canHandle)
 {

@@ -98,11 +98,13 @@ int main(void)
   MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
 
+  Speaker_Reset(); //喇叭复位
+
   HAL_UART_Transmit(&huart2, "1s_Test", 8, HAL_MAX_DELAY);
   HAL_UARTEx_ReceiveToIdle_DMA(&huart2, NUC_Uart_Rx_Buff, 128);
   __HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
 
- HAL_TIM_Base_Start_IT(&GAP_TIM);
+  HAL_TIM_Base_Start_IT(&GAP_TIM);
 
   /* USER CODE END 2 */
 

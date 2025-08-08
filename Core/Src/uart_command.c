@@ -122,7 +122,40 @@ void Task_Parse(uint32_t data)
 
     else
     {
+        uint8_t state = 0;
+        uint8_t direction = 0; // 方向0为左，1为右
+        //首先判断左右
+        if (data_array[1] == 0)
+        {
+            direction = 0;
+        }
+        else
+        {
+            direction = 1;
+        }
 
+        //然后判断旱情程度
+        if (data_array[2] == 0 && data_array[3] == 0)
+        {
+            state = 1;
+        }
+        else if (data_array[2] == 0 && data_array[3] == 1)
+        {
+            state = 2;
+        }
+        else if (data_array[2] == 1 && data_array[3] == 1)
+        {
+            state = 3;
+        }
+        else if (data_array[2] == 1 && data_array[3] == 0)
+        {
+            state = 0;
+        }
+        Speaker_Active(state); //语音播报
+        Speaker_Reset();
+        /****************
+        这里放置C610代码
+        ****************/
     }
 }
 
@@ -174,3 +207,17 @@ CRC 1748E2AB
 //2B C0 71 00 00 69 05 4D 53 2A
 //2B F4 30 00 00 68 8D 5C 5D 2A
 //2B FE 01 00 00 AB E2 48 17 2A
+
+
+/*下面是语音播报和C610的测试推导
+
+11010000 00000000 00000000 00000000
+真正的uint32_t数据
+00000000 00000000 00000000 00001011
+即0x0000000B
+小端重排
+2B 0B 00 00 00
+CRC A7 32 6E 09
+再次小端重排
+2B 0B 00 00 00 09 6E 32 A7 2A
+*/

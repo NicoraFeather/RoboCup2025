@@ -4,17 +4,35 @@
 
 #include "callback.h"
 
+#include <stdio.h>
+#include <string.h>
+
 #include "can.h"
 #include "tim.h"
 
+int i = 0; // 时间计数变量
+uint8_t PC_message[100] = ""; // 用于存储发送给上位机的消息
+/*********来自CAN***********/
+uint8_t rxData[8];
+float actul_pos_l, actul_speed_l, actul_cur_l;
+float actul_pos_r, actul_speed_r, actul_cur_r;
+
 extern DMA_HandleTypeDef hdma_usart2_rx;
 extern uint8_t NUC_Uart_Rx_Buff[128]; //接收串口2的数据缓存数组
+
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) //定时器回调函数，用于计算速度
 {
     if (htim->Instance == GAP_TIM.Instance) //1ms间隔定时器中断，计算速度、调整速度、发送参数
     {
-
+        i++;
+        if (i >= 1000)
+        {
+            i = 0;
+            sprintf(PC_message, "pos_l:%d, pos_r%d\r\n", (int)actul_pos_l, (int)actul_pos_r);
+            HAL_UART_Transmit(&huart2, PC_message, strlen(PC_message), HAL_MAX_DELAY);
+            //HAL_UART_Transmit(&huart2, "Hello, World!\r\n", 16, HAL_MAX_DELAY); //测试用
+        }
     }
 }
 
@@ -43,9 +61,7 @@ CAN_RxHeaderTypeDef rxHeader;
   uint32_t Timestamp; // 时间戳
 */
 /*定义接收数据缓冲区*/
-uint8_t rxData[8];
-float actul_pos_l, actul_speed_l, actul_cur_l;
-float actul_pos_r, actul_speed_r, actul_cur_r;
+
 // 接收中断回调函数
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
